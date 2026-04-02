@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 
+// ─── DATA ───────────────────────────────────────────────────────────────────
+
 const REP = { name: "Alex Navarro", initials: "AN", title: "Enterprise AE — North America", quarter: "Q1 2026", week: "Week 11 of 13", quota: 1200000, closed: 680000, pipeline: 2800000, coverage: 2.3, winRate: 28, avgDealSize: 85000, avgCycle: 62, dealsOpen: 18, dealsAtRisk: 4, meetingsThisWeek: 12, forecastCommit: 920000 };
 
 const TABS = ["Pipeline management", "Deal risk", "Stakeholder gaps", "Coaching insights"];
@@ -47,13 +49,30 @@ const ALL_DEALS = {
   ],
 };
 
-const CHAT_RESPONSES = {
-  pipeline: "Here's your pipeline breakdown:\n\n**By Stage:**\n• Negotiation: $297K (Sandra $112K + Robert $185K) — highest probability\n• Proposal: $276K (Michelle $142K + Ahmed $134K)\n• Technical Eval: $168K (Karen $168K — POC in progress)\n• Discovery: $220K (Daniel $220K — Citrix displacement)\n• Demo: $96K (Jason $96K — Thursday)\n• Qualification: $78K (Lisa $78K — early stage)\n\n**Pipeline health:**\n• Total: $2.8M, Coverage: 2.3x (need 3x for comfort)\n• Weighted pipeline: $920K (commit forecast)\n• 3 deals closable in Q1: $453K (Sandra, Robert, Tom)\n• Gap to quota: $520K — needs 2-3 of the Q1 deals to land\n\n**Action:** Lock Sandra's PO this week ($112K), finalize Robert's contract ($185K), and re-engage Tom Reeves ($156K).",
-  risk: "Your 6 at-risk deals ranked by save potential:\n\n1. **Tom Reeves** (Cascade Digital) — $156K, stalled 21 days. Was in negotiation. **Best save bet** — send the benchmark report and use Q1 pricing deadline (3/31) as urgency.\n2. **Rebecca Frost** (Alpine Tech) — $198K, evaluating VMware. Only 1 stakeholder. **Biggest deal at risk.** Need TCO comparison and multi-thread ASAP.\n3. **Kevin Andersen** (BluePeak) — $88K, procurement stuck. Tech team loves it. **Create CFO one-pager** to unstick procurement.\n4. **Diana Morales** (Pinnacle Cloud) — $144K, POC done but no next steps. **Decision maker not engaged.** Request intro to VP.\n5. **Eric Johansson** (DataStream) — $110K, budget frozen. **Offer deferred billing** to keep momentum.\n6. **Priya Patel** (Horizon) — $76K, ghosting. **Likely lost** — send a no-pressure breakup email.\n\n**Total at-risk ARR: $772K.** Focus saves on Tom, Rebecca, and Kevin — combined $442K with the clearest paths forward.",
-  stakeholders: "**Multi-threading status across your pipeline:**\n\n| Deal | Contacts | Gap |\n|---|---|---|\n| Apex Financial ($185K) | CTO only | **Need CFO** — economic buyer |\n| Summit Health ($168K) | CISO only | **Need CIO + clinical IT lead** |\n| Meridian Cloud ($220K) | CEO only | **Need solutions architect** |\n| NorthPoint ($134K) | VP Eng only | **Need CFO + CISO** |\n| CloudBridge ($96K) | Head of Sales | **Need CEO/founder** |\n| Pacific ($78K) | COO only | **Need technical lead** |\n\n**4 of 8 active deals are single-threaded.** Your win rate drops from 38% to 14% when only 1 contact is engaged.\n\n**Priority intros this week:**\n1. Apex CFO — $185K deal in negotiation, needs sign-off\n2. Summit CIO — $168K, POC ending, decision maker missing\n3. NorthPoint CFO + CISO — committee forming, get ahead of it",
-  coaching: "**Your performance insights vs top AEs:**\n\n**Where you're strong:**\n• Deal size: $85K avg vs $72K team avg — you sell bigger\n• Technical eval conversion: 68% vs 55% avg — POCs go well\n• Citrix displacement win rate: 65% — strong competitive muscle\n\n**Where to improve:**\n• **Deal velocity:** 62 days vs 54 avg. Gap is in Discovery→Demo (18 vs 11 days). Book demos in the first call.\n• **Multi-threading:** 50% of deals are single-threaded vs 25% for top performers. Each new contact adds ~12% to win probability.\n• **Email reply rate:** 24% vs 31% avg. Lead with ROI data instead of generic check-ins. Your ROI emails hit 38%.\n• **Discovery depth:** 8 questions avg vs 12 for top performers. Focus on budget, decision process, and paper process.\n\n**If you fix discovery speed + multi-threading, your forecast model shows an extra $180K-$240K per quarter.** Start with this week: book CloudBridge demo during Thursday's call, and get 2 stakeholder intros on Apex and Summit.",
-  forecast: "**Q1 Forecast — 2 weeks remaining:**\n\n**Closed: $680K** (57% of $1.2M quota)\n**Gap: $520K**\n\n**Commit deals (80%+ probability):**\n• Sandra Liu — $112K, verbal commit, PO pending → **This week**\n• Robert Chen — $185K, contract redline → **Close by 3/28**\nSubtotal: $297K\n\n**Best case (50%+ with action):**\n• Tom Reeves — $156K, re-engage with benchmark + Q1 deadline\n• Michelle Park — $142K, follow up on proposal + ROI model\nSubtotal: $298K\n\n**If commit lands:** $680K + $297K = **$977K (81% of quota)**\n**If best case lands:** $680K + $595K = **$1.275M (106% of quota)**\n\nThe difference between 81% and 106% comes down to re-engaging Tom and closing Michelle this month. Both are doable with focused effort this week.",
-  fallback: "Based on your current pipeline:\n\nYou have **$2.8M in pipeline** with **2.3x coverage** on a **$1.2M quota**. You've closed **$680K** (57%) with 2 weeks left.\n\n**Priorities this week:**\n1. Lock Sandra Liu's PO ($112K) — verbal commit, needs push\n2. Finalize Robert Chen's contract ($185K) — legal redline pending\n3. Re-engage Tom Reeves ($156K) — stalled 21 days, Q1 deadline play\n4. Multi-thread Apex and Summit — both need executive engagement\n5. Prep CloudBridge demo for Thursday\n\nWant me to dig into your forecast, deal risks, stakeholder gaps, or coaching insights?"
+// ─── BENCHMARK DATA ─────────────────────────────────────────────────────────
+
+const BENCHMARKS = {
+  categories: [
+    { label: "Win Rate", you: 28, team: 26, topPerformer: 38, industry: 22, unit: "%" },
+    { label: "Avg Deal Size", you: 85, team: 72, topPerformer: 110, industry: 65, unit: "$K" },
+    { label: "Avg Cycle (days)", you: 62, team: 54, topPerformer: 42, industry: 68, unit: "d", inverted: true },
+    { label: "Pipeline Coverage", you: 2.3, team: 2.8, topPerformer: 3.5, industry: 2.5, unit: "x" },
+    { label: "Discovery→Demo", you: 18, team: 11, topPerformer: 7, industry: 14, unit: "d", inverted: true },
+    { label: "Email Reply Rate", you: 24, team: 31, topPerformer: 42, industry: 28, unit: "%" },
+    { label: "Multi-threading", you: 1.5, team: 2.2, topPerformer: 3.4, industry: 2.0, unit: "contacts" },
+    { label: "Meetings/Week", you: 12, team: 10, topPerformer: 15, industry: 9, unit: "" },
+  ],
+  trends: {
+    winRate: [{ m: "Oct", v: 22 }, { m: "Nov", v: 25 }, { m: "Dec", v: 30 }, { m: "Jan", v: 26 }, { m: "Feb", v: 28 }, { m: "Mar", v: 28 }],
+    dealSize: [{ m: "Oct", v: 68 }, { m: "Nov", v: 72 }, { m: "Dec", v: 78 }, { m: "Jan", v: 80 }, { m: "Feb", v: 83 }, { m: "Mar", v: 85 }],
+    cycle: [{ m: "Oct", v: 72 }, { m: "Nov", v: 68 }, { m: "Dec", v: 65 }, { m: "Jan", v: 64 }, { m: "Feb", v: 63 }, { m: "Mar", v: 62 }],
+    pipeline: [{ m: "Oct", v: 1.8 }, { m: "Nov", v: 2.1 }, { m: "Dec", v: 2.4 }, { m: "Jan", v: 2.0 }, { m: "Feb", v: 2.2 }, { m: "Mar", v: 2.3 }],
+  },
+  quarterComps: [
+    { q: "Q3 2025", closed: 480000, quota: 1000000, win: 22, deals: 14 },
+    { q: "Q4 2025", closed: 720000, quota: 1100000, win: 25, deals: 16 },
+    { q: "Q1 2026", closed: 680000, quota: 1200000, win: 28, deals: 18 },
+  ],
 };
 
 const PIPELINE_STAGES = [
@@ -65,22 +84,132 @@ const PIPELINE_STAGES = [
   { stage: "Negotiation", value: 297, deals: 2, color: "#1D9E75" },
 ];
 
-const WIN_RATE_DATA = [
-  { month: "Oct", value: 22 }, { month: "Nov", value: 25 }, { month: "Dec", value: 30 },
-  { month: "Jan", value: 26 }, { month: "Feb", value: 28 }, { month: "Mar", value: 28 },
+// ─── AGENT DEFINITIONS ──────────────────────────────────────────────────────
+
+const AGENTS = [
+  {
+    id: "copilot",
+    name: "AE Insight Copilot",
+    icon: "🧠",
+    color: "#D4A574",
+    bgColor: "#FFF8F0",
+    borderColor: "#F0E6D6",
+    description: "Real-time deal intelligence, coaching nudges, and strategic recommendations powered by your pipeline data",
+    capabilities: ["Deal scoring & prioritization", "Coaching recommendations", "Competitive intelligence", "Forecast modeling", "Risk early warnings"],
+    prompts: [
+      "What should I focus on this week?",
+      "Which deals are most likely to slip?",
+      "How do I improve my win rate?",
+      "Build me a Q1 close plan",
+      "Score my pipeline health",
+    ],
+  },
+  {
+    id: "rfp",
+    name: "RFP & Response Support",
+    icon: "📋",
+    color: "#534AB7",
+    bgColor: "#F5F4FE",
+    borderColor: "#DDDAFC",
+    description: "Draft and refine RFP responses with AI-assisted research, formatting, and compliance checking",
+    capabilities: ["RFP response drafting", "Compliance checklist generation", "Competitive differentiation sections", "Technical spec formatting", "Win theme identification"],
+    prompts: [
+      "Draft a security & compliance section for Summit Health",
+      "Create an RFP response for the Apex Financial deal",
+      "Generate a competitive comparison vs VMware Horizon",
+      "Write the executive summary for NorthPoint proposal",
+      "Build a pricing justification section",
+    ],
+  },
+  {
+    id: "research",
+    name: "Account & Deal Research",
+    icon: "🔍",
+    color: "#185FA5",
+    bgColor: "#F0F6FE",
+    borderColor: "#C7DEF7",
+    description: "Surface relevant context for opportunities, accounts, and deal preparation from public and internal sources",
+    capabilities: ["Company research & briefings", "Stakeholder mapping", "Industry trends & triggers", "Competitive landscape analysis", "Deal prep packages"],
+    prompts: [
+      "Research Apex Financial Group for my meeting",
+      "Build a stakeholder map for Summit Health",
+      "What's happening in the MSP market this quarter?",
+      "Prep me for the CloudBridge demo Thursday",
+      "Find recent news about Meridian Cloud Services",
+    ],
+  },
+  {
+    id: "email",
+    name: "Email & Recap Generation",
+    icon: "✉️",
+    color: "#0F6E56",
+    bgColor: "#EEFBF5",
+    borderColor: "#C2EDD8",
+    description: "Draft follow-up emails, meeting recaps, and outreach sequences for rep review and send",
+    capabilities: ["Follow-up email drafts", "Meeting recap summaries", "Multi-touch sequences", "Re-engagement campaigns", "Internal deal update emails"],
+    prompts: [
+      "Write a follow-up to Tom Reeves at Cascade",
+      "Draft a meeting recap for the Karen Walsh POC review",
+      "Create a re-engagement sequence for Priya Patel",
+      "Write an internal deal update for my manager",
+      "Draft a multi-thread intro email for Apex CFO",
+    ],
+  },
 ];
 
-function MiniLine({ data, maxH = 55, color = "#1D9E75" }) {
-  const mx = Math.max(...data.map(d => d.value));
-  const mn = Math.min(...data.map(d => d.value));
+// ─── AGENT RESPONSES ────────────────────────────────────────────────────────
+
+const AGENT_RESPONSES = {
+  copilot: {
+    "What should I focus on this week?": "**This Week's Priority Stack — March 18-22**\n\n**1. Sandra Liu / Vertex Cloud — $112K** 🔴 CLOSE\nVerbal commit in hand. PO pending. Chase ops team for PO by Wednesday. This is your highest-probability close.\n\n**2. Robert Chen / Apex Financial — $185K** 🔴 CLOSE\nContract redline in progress. Get your legal to respond to their 2 flagged items TODAY. Schedule Thursday call to finalize. Don't let this slip past quarter.\n\n**3. Tom Reeves / Cascade Digital — $156K** 🟡 RE-ENGAGE\n21 days dark. Send the benchmark report + Q1 pricing deadline as urgency lever. If no response by Wednesday, try his LinkedIn or a different channel.\n\n**4. CloudBridge Demo Prep — Thursday** 🟡 PREPARE\nCustomize the demo for 400% growth story. Focus: multi-tenant scale, automated provisioning, headcount efficiency.\n\n**5. Multi-thread Apex + Summit** 🟡 EXPAND\nBoth $185K and $168K deals are single-threaded. Get CFO intro at Apex. Get CIO + clinical lead at Summit.\n\n**If you execute all 5:** Path to $977K closed (81% of quota) with upside to $1.27M (106%).",
+    "Which deals are most likely to slip?": "**Slip Risk Analysis — Ranked by Probability of Missing Close Date**\n\n🔴 **HIGH SLIP RISK:**\n\n**1. Priya Patel / Horizon — $76K (Due 3/28)**\nSlip confidence: **95%**\n4 unreturned follow-ups + rumored reorg = effectively dead for Q1. Recommend: breakup email, revisit Q2.\n\n**2. Tom Reeves / Cascade — $156K (Due 3/31)**\nSlip confidence: **75%**\n21 days stalled after being in Negotiation. Champion silent. However, Q1 pricing deadline and benchmark report could re-engage. Worth one strong attempt.\n\n**3. Kevin Andersen / BluePeak — $88K (Due 3/28)**\nSlip confidence: **65%**\nClose date already pushed twice. Procurement bottleneck. Tech team loves it but can't get PO through. CFO one-pager may help.\n\n🟡 **MODERATE SLIP RISK:**\n\n**4. Rebecca Frost / Alpine — $198K (Due 4/5)**\nSlip confidence: **55%**\nCompetitor eval + budget concerns + single-threaded. Biggest dollar risk.\n\n**5. Michelle Park / TechVantage — $142K (Due 3/31)**\nSlip confidence: **40%**\nProposal sent 3/7, no response. Budget approved but competitor demo scheduled.\n\n**Total Q1 at risk of slipping: $660K.** Focus saves on Tom ($156K) and Kevin ($88K) — clearest paths with tightest deadlines.",
+    "How do I improve my win rate?": "**Win Rate Improvement Plan — From 28% to 35%+**\n\nBased on your last 4 quarters of data, here are the 3 highest-leverage changes:\n\n**1. Multi-thread earlier (Impact: +6% win rate)**\nYour single-threaded deals close at 14%. Deals with 3+ contacts close at 38%. That's a 2.7x multiplier. You currently have 50% of deals single-threaded vs 25% for top performers.\n→ **Action:** Add a mandatory \"who else should we include?\" in every discovery call. Target 3+ contacts by Proposal stage.\n\n**2. Compress Discovery→Demo (Impact: +4% win rate)**\nYou take 18 days vs 11 team average. Your fastest closes all had demo booked in the first call. Every extra week in early stages correlates with -3% close rate.\n→ **Action:** End every discovery call with a demo date on the calendar. Even if it's 2 weeks out, it creates commitment.\n\n**3. Upgrade email quality (Impact: +2% win rate)**\nYour 24% reply rate vs 31% team avg means lost touchpoints. Your ROI-lead emails hit 38% — use that template for everything. Kill generic \"checking in\" emails (12% reply).\n→ **Action:** Lead every email with a specific data point or insight. I can rewrite your pending follow-ups.\n\n**Combined expected impact: +8-12% win rate** → takes you from 28% to ~36-40%, which at your deal volume means **$200K+ additional annual revenue.**",
+    fallback: "Let me analyze that based on your current pipeline data.\n\nYou have **$2.8M in pipeline** across **18 open deals** with **2.3x coverage** on a $1.2M quota. You've closed **$680K (57%)** with 2 weeks remaining in Q1.\n\n**Key signals I'm watching:**\n• 3 deals closable this quarter totaling $453K\n• 4 deals single-threaded (biggest risk factor)\n• Deal velocity 8 days above team average\n• Email engagement below team benchmark\n\nWant me to go deeper on any of these? I can model scenarios, draft action plans, or give you specific coaching on any deal.",
+  },
+  rfp: {
+    "Draft a security & compliance section for Summit Health": "**Section 4: Security & Compliance**\n\n**4.1 HIPAA Compliance**\nNerdio Manager for Enterprise is designed to support HIPAA-regulated healthcare environments. Our platform:\n- Operates within the customer's Azure tenant — no patient data transits Nerdio infrastructure\n- Supports BAA execution with Microsoft Azure\n- Enforces session-level encryption (TLS 1.2+) and disk encryption (AES-256)\n- Provides audit logging for all administrative actions\n- Supports conditional access policies aligned with HIPAA technical safeguards\n\n**4.2 SOC 2 Type II Certification**\nNerdio has achieved SOC 2 Type II certification covering:\n- Security, Availability, and Confidentiality trust principles\n- Annual third-party audit by [Auditor Name]\n- Most recent report period: January — December 2025\n\n**4.3 Data Residency & Isolation**\n- All compute and data remain in Summit Health's Azure tenant\n- Nerdio's control plane communicates via secure API — no data storage\n- Role-based access control (RBAC) with Azure AD integration\n- Multi-factor authentication enforced for all admin access\n\n**4.4 Incident Response**\n- 24/7 security monitoring with <1 hour response SLA\n- Quarterly penetration testing by independent third parties\n- Vulnerability disclosure program in place\n\n*This section is drafted based on Nerdio's standard compliance posture. Please review with your SE team for any Summit Health-specific requirements.*\n\n---\n**Ready to review?** I can adjust for specific RFP questions or add clinical workflow security details.",
+    "Create an RFP response for the Apex Financial deal": "**RFP Response Draft — Apex Financial Group**\n**Virtual Desktop Infrastructure Solution**\n\n---\n\n**Executive Summary**\nNerdio Manager for Enterprise delivers a fully managed Azure Virtual Desktop (AVD) solution that reduces Apex Financial's desktop infrastructure costs by an estimated 40-60% while strengthening security posture and compliance readiness. Our platform automates provisioning, scaling, and management of virtual desktops within Apex's existing Azure tenant — eliminating the need for on-premises VDI infrastructure.\n\n**Key Differentiators for Apex Financial:**\n- **Financial services compliance:** SOC 2 Type II, supports SOX and PCI-DSS requirements\n- **Cost optimization:** Auto-scaling reduces Azure spend by 30-50% vs always-on VDI\n- **Zero data exposure:** All data stays in Apex's Azure tenant\n- **Rapid deployment:** 3,200 desktops migrated in ~60 days (based on comparable deployments)\n\n**Projected ROI — 3 Years:**\n| Metric | Current State | With Nerdio |\n|---|---|---|\n| Annual infra cost | $620K | $290K |\n| Admin hours/month | 180 hrs | 40 hrs |\n| Deployment time | 4-6 weeks | 2-4 hours |\n| Uptime SLA | 99.5% | 99.9% |\n\n**3-Year Savings: $420K+ projected**\n**Payback period: 8 months**\n\n*I've structured this for Robert Chen's CTO perspective. Want me to create a CFO-focused version for the economic buyer?*",
+    fallback: "I'll help draft that RFP response. To generate the most effective content, let me know:\n\n1. **Which account/deal** is this for?\n2. **Specific sections** needed (executive summary, technical specs, compliance, pricing justification, etc.)\n3. **Key differentiators** to emphasize\n4. **Competitor** they're evaluating against\n\nI have context on all your open deals — I can pull relevant details automatically if you name the account.\n\nQuick options:\n• Generate a full RFP response template\n• Draft a specific section (security, ROI, technical architecture)\n• Create a competitive comparison table\n• Build a win theme document",
+  },
+  research: {
+    "Research Apex Financial Group for my meeting": "**Account Briefing: Apex Financial Group**\n*Prepared for: Alex Navarro — Meeting prep*\n\n---\n\n**Company Overview**\n- **Industry:** Financial Services / Wealth Management\n- **Founded:** 2004 | HQ: Chicago, IL\n- **Employees:** ~2,200 | Revenue: Est. $340M (2025)\n- **IT footprint:** 3,200+ desktops across 14 offices\n\n**Key Stakeholders Identified**\n| Name | Title | Relevance |\n|---|---|---|\n| Robert Chen | CTO | Your champion — driving the AVD initiative |\n| Margaret Wu | CFO | Economic buyer — NOT yet engaged ⚠️ |\n| David Park | VP Infrastructure | Technical evaluator — likely involved in implementation |\n| Sarah Kim | CISO | Security sign-off required for financial services |\n\n**Strategic Context**\n- Apex is in the middle of a cloud-first transformation (announced Q3 2025)\n- Recently migrated core trading platform to Azure — signaling Azure commitment\n- Regulatory pressure: OCC published new guidelines on remote desktop security for financial firms\n- Current state: On-prem Citrix infrastructure nearing end-of-life (estimated $180K annual maintenance)\n\n**Competitive Intelligence**\n- No known active competitor evaluation for this deal\n- Apex previously evaluated VMware Horizon in 2024 — rejected on cost\n- Robert Chen attended a Nerdio webinar in November (strong inbound signal)\n\n**Conversation Starters**\n1. \"I saw Apex completed the Azure migration for your trading platform — how's that going?\"\n2. \"With the new OCC desktop security guidelines, has that changed your timeline?\"\n3. \"Your Citrix environment — are you seeing the maintenance cost increases other financial firms are reporting?\"\n\n**Risk Factors**\n- CFO not engaged — deal could stall at procurement\n- Financial services compliance requirements add 2-3 weeks to eval cycle\n- Q1 budget deadline creates urgency but also pressure to defer to Q2",
+    "Build a stakeholder map for Summit Health": "**Stakeholder Map: Summit Health Network**\n*Deal: $168K — Technical Eval stage*\n\n---\n\n**Power/Influence Grid**\n\n```\n HIGH POWER\n ┌─────────────────────────────────────┐\n │                                     │\n │  [CIO - Unknown]      [CISO - Karen]│\n │  Decision maker ⚠️    Technical lead │\n │  NOT ENGAGED          ENGAGED ✅     │\n │                                     │\n │  [CFO - Unknown]                    │\n │  Budget authority ⚠️                │\n │  NOT ENGAGED                        │\n ├─────────────────────────────────────┤\n │                                     │\n │  [Clinical IT Lead]   [IT Admin Team]│\n │  End-user champion ⚠️ Day-to-day ✅  │\n │  NOT ENGAGED          POC users     │\n │                                     │\n LOW POWER                             │\n └─────────────────────────────────────┘\n  LOW INFLUENCE ──────── HIGH INFLUENCE\n```\n\n**Engagement Status**\n🔴 **Critical gaps:** CIO (decision maker) and Clinical IT Lead (champion)\n🟡 **Needs attention:** CFO for budget approval\n🟢 **Engaged:** CISO Karen Walsh, IT admin team running POC\n\n**Recommended Engagement Sequence:**\n1. **This week:** Ask Karen for CIO intro — frame as \"strategic alignment\" before POC readout\n2. **Next week:** Joint readout meeting with CIO + Karen — present POC results + business case\n3. **Week 3:** Clinical IT Lead demo — show end-user experience, build internal champion\n4. **Week 4:** CFO meeting — ROI presentation with CIO endorsement\n\n**Healthcare-Specific Dynamics:**\n- Clinical IT leads in healthcare often have outsized influence (they can block adoption)\n- CIOs at health networks typically delegate to CISO for security but retain final budget authority\n- HIPAA compliance is table stakes — lead with it, don't save it for objection handling\n\n**Risk if gaps not addressed:** POC completes but no one with budget authority has context → deal stalls 60+ days while you rebuild momentum. This is exactly what happened with Diana Morales at Pinnacle.",
+    fallback: "I'll research that for you. What would be most helpful?\n\n**Account Research:**\n• Company overview & strategic context\n• Stakeholder mapping & org chart\n• Recent news & trigger events\n• Technology stack intelligence\n\n**Market Research:**\n• Industry trends affecting your deals\n• Competitive landscape analysis\n• Pricing & packaging benchmarks\n\n**Deal Prep:**\n• Pre-meeting briefing package\n• Discovery question framework\n• Objection handling prep\n\nName an account or topic and I'll pull together a comprehensive brief.",
+  },
+  email: {
+    "Write a follow-up to Tom Reeves at Cascade": "**Subject: Cascade's MSP benchmark data + Q1 deadline**\n\nHi Tom,\n\nI know it's been a few weeks since our last conversation — things move fast in Q1.\n\nI wanted to share something I think you'll find valuable: we just published our MSP benchmark report for companies at Cascade's scale. The headline number: MSPs managing 5,000-10,000 desktops see an average of **$340K in annual savings** after deploying Nerdio — mostly from automated scaling and reduced admin overhead.\n\nI've attached the executive summary. The section on page 3 about reducing per-desktop management cost from $18 to $6 is particularly relevant given our earlier conversations about Cascade's operational efficiency goals.\n\nTwo things worth noting:\n1. Our Q1 pricing promotion (15% off first-year licensing) expires **March 31**\n2. I can have a custom TCO analysis ready for your team in 48 hours\n\nWould you have 20 minutes this week to reconnect? I can walk you through the benchmark data and how it maps to Cascade's environment.\n\nBest,\nAlex\n\n---\n\n**Strategy notes:**\n- Lead with value (benchmark data), not \"checking in\"\n- Create urgency with Q1 deadline without being pushy\n- Offer something tangible (custom TCO) as reason to re-engage\n- Short — Tom hasn't responded in 21 days, respect his time\n\n**Recommended send time:** Tuesday 8:30 AM (Tom's timezone)\n**Follow-up if no response:** Thursday, different channel (LinkedIn)",
+    "Draft a meeting recap for the Karen Walsh POC review": "**Subject: Summit Health POC Mid-Review — Recap & Next Steps**\n\nHi Karen,\n\nThank you for the productive mid-POC review today. Here's a summary of what we covered and the agreed next steps.\n\n---\n\n**POC Results (Week 2 of 4)**\n\n| Metric | Target | Actual |\n|---|---|---|\n| Desktops migrated | 200 | 200 ✅ |\n| Uptime | 99.5% | 99.8% ✅ |\n| Security incidents | 0 | 0 ✅ |\n| Cost vs on-prem (projected) | -30% | -45% ✅ |\n| User satisfaction | 4.0/5 | 4.3/5 ✅ |\n\n**Key Discussion Points:**\n- Your team confirmed the management console is \"significantly more intuitive\" than current tooling\n- HIPAA compliance documentation reviewed — no gaps identified\n- SOC 2 Type II report shared and accepted by your security team\n- Question raised about DR/failover for clinical workstations — our SE team will provide architecture doc by Friday\n\n**Agreed Next Steps:**\n| Action | Owner | Due |\n|---|---|---|\n| DR/failover architecture doc | Nerdio SE team | March 22 |\n| Phase 2 POC scope (clinical desktops) | Karen's team | March 25 |\n| CIO strategic alignment meeting | Alex to schedule | March 26 |\n| Full POC readout presentation | Joint | April 1 |\n\n**Open Items:**\n- Clinical IT lead involvement for end-user workflow testing (Karen to identify)\n- Budget discussion timeline (Karen to confirm with CIO)\n\nPlease let me know if I've missed anything or if any items need correction. Looking forward to the next phase.\n\nBest,\nAlex\n\n---\n*Copy this to your CRM notes? I've formatted it for both email send and internal logging.*",
+    "Create a re-engagement sequence for Priya Patel": "**Re-engagement Sequence: Priya Patel — Horizon Services Group**\n*$76K deal — Ghosting since demo (4 unreturned follow-ups)*\n\n---\n\n**Email 1: Value-first breakup (Send: Monday)**\nSubject: One last thing before I close this out\n\nHi Priya,\n\nI know things have been busy at Horizon — especially if there are organizational changes happening. I don't want to keep filling your inbox, so this will be my last outreach for now.\n\nBefore I close this out, I wanted to leave you with one data point: we helped a services company of similar size (50-person team, 3,000+ desktops) save **$180K in their first year** with Nerdio. Most of that came from eliminating manual provisioning — their team went from 15 hours per client setup to under 1 hour.\n\nIf and when the timing is right, I'd love to pick this conversation back up. No pressure at all.\n\nBest,\nAlex\n\n---\n\n**Email 2: Trigger-based follow-up (Send: 3 weeks later, IF no response)**\nSubject: Thought of Horizon when I saw this\n\nHi Priya,\n\nI came across [relevant industry article/case study] and thought of our earlier conversation about Horizon's desktop management challenges. [Specific insight from the article].\n\nWorth a quick chat if this is back on the radar?\n\nAlex\n\n---\n\n**Email 3: New angle via different stakeholder (Send: 5 weeks later, IF no response)**\nSubject: Quick question about Horizon's cloud strategy\n\nHi [Priya's colleague — research needed],\n\nI've been working with Priya on a desktop virtualization initiative at Horizon. I understand the team may be re-evaluating priorities, and I wanted to make sure the evaluation materials we prepared are getting to the right people.\n\nWould you be the right person to discuss Horizon's cloud desktop plans going forward?\n\nAlex\n\n---\n\n**Sequence Strategy:**\n- Email 1 breaks the pattern (no ask, just give value)\n- Email 2 waits for a trigger event to justify re-engagement\n- Email 3 goes around — if Priya is truly gone (reorg), find the new owner\n- Total sequence: 5 weeks. If all 3 fail → mark as Closed Lost, revisit Q3.",
+    fallback: "I'll draft that for you. What type of email do you need?\n\n**Follow-up emails:**\n• Post-meeting follow-up with action items\n• Proposal follow-up (no response)\n• Check-in after demo/POC\n• Re-engagement after going dark\n\n**Meeting recaps:**\n• Discovery call summary\n• POC review recap\n• Executive meeting notes\n• Demo follow-up with key takeaways\n\n**Outreach sequences:**\n• Multi-touch prospecting sequence\n• Re-engagement campaign\n• Multi-thread intro emails\n• Internal deal update for leadership\n\nName the account and context, and I'll draft something ready to review and send.",
+  },
+};
+
+// ─── CHAT RESPONSES (Deal board) ────────────────────────────────────────────
+
+const CHAT_RESPONSES = {
+  pipeline: "Here's your pipeline breakdown:\n\n**By Stage:**\n• Negotiation: $297K (Sandra $112K + Robert $185K) — highest probability\n• Proposal: $276K (Michelle $142K + Ahmed $134K)\n• Technical Eval: $168K (Karen $168K — POC in progress)\n• Discovery: $220K (Daniel $220K — Citrix displacement)\n• Demo: $96K (Jason $96K — Thursday)\n• Qualification: $78K (Lisa $78K — early stage)\n\n**Pipeline health:**\n• Total: $2.8M, Coverage: 2.3x (need 3x for comfort)\n• Weighted pipeline: $920K (commit forecast)\n• 3 deals closable in Q1: $453K (Sandra, Robert, Tom)\n• Gap to quota: $520K — needs 2-3 of the Q1 deals to land\n\n**Action:** Lock Sandra's PO this week ($112K), finalize Robert's contract ($185K), and re-engage Tom Reeves ($156K).",
+  risk: "Your 6 at-risk deals ranked by save potential:\n\n1. **Tom Reeves** (Cascade Digital) — $156K, stalled 21 days. Was in negotiation. **Best save bet** — send the benchmark report and use Q1 pricing deadline (3/31) as urgency.\n2. **Rebecca Frost** (Alpine Tech) — $198K, evaluating VMware. Only 1 stakeholder. **Biggest deal at risk.** Need TCO comparison and multi-thread ASAP.\n3. **Kevin Andersen** (BluePeak) — $88K, procurement stuck. Tech team loves it. **Create CFO one-pager** to unstick procurement.\n4. **Diana Morales** (Pinnacle Cloud) — $144K, POC done but no next steps. **Decision maker not engaged.** Request intro to VP.\n5. **Eric Johansson** (DataStream) — $110K, budget frozen. **Offer deferred billing** to keep momentum.\n6. **Priya Patel** (Horizon) — $76K, ghosting. **Likely lost** — send a no-pressure breakup email.\n\n**Total at-risk ARR: $772K.** Focus saves on Tom, Rebecca, and Kevin — combined $442K with the clearest paths forward.",
+  stakeholders: "**Multi-threading status across your pipeline:**\n\n| Deal | Contacts | Gap |\n|---|---|---|\n| Apex Financial ($185K) | CTO only | **Need CFO** — economic buyer |\n| Summit Health ($168K) | CISO only | **Need CIO + clinical IT lead** |\n| Meridian Cloud ($220K) | CEO only | **Need solutions architect** |\n| NorthPoint ($134K) | VP Eng only | **Need CFO + CISO** |\n| CloudBridge ($96K) | Head of Sales | **Need CEO/founder** |\n| Pacific ($78K) | COO only | **Need technical lead** |\n\n**4 of 8 active deals are single-threaded.** Your win rate drops from 38% to 14% when only 1 contact is engaged.\n\n**Priority intros this week:**\n1. Apex CFO — $185K deal in negotiation, needs sign-off\n2. Summit CIO — $168K, POC ending, decision maker missing\n3. NorthPoint CFO + CISO — committee forming, get ahead of it",
+  coaching: "**Your performance insights vs top AEs:**\n\n**Where you're strong:**\n• Deal size: $85K avg vs $72K team avg — you sell bigger\n• Technical eval conversion: 68% vs 55% avg — POCs go well\n• Citrix displacement win rate: 65% — strong competitive muscle\n\n**Where to improve:**\n• **Deal velocity:** 62 days vs 54 avg. Gap is in Discovery→Demo (18 vs 11 days). Book demos in the first call.\n• **Multi-threading:** 50% of deals are single-threaded vs 25% for top performers. Each new contact adds ~12% to win probability.\n• **Email reply rate:** 24% vs 31% avg. Lead with ROI data instead of generic check-ins. Your ROI emails hit 38%.\n• **Discovery depth:** 8 questions avg vs 12 for top performers. Focus on budget, decision process, and paper process.\n\n**If you fix discovery speed + multi-threading, your forecast model shows an extra $180K-$240K per quarter.** Start with this week: book CloudBridge demo during Thursday's call, and get 2 stakeholder intros on Apex and Summit.",
+  forecast: "**Q1 Forecast — 2 weeks remaining:**\n\n**Closed: $680K** (57% of $1.2M quota)\n**Gap: $520K**\n\n**Commit deals (80%+ probability):**\n• Sandra Liu — $112K, verbal commit, PO pending → **This week**\n• Robert Chen — $185K, contract redline → **Close by 3/28**\nSubtotal: $297K\n\n**Best case (50%+ with action):**\n• Tom Reeves — $156K, re-engage with benchmark + Q1 deadline\n• Michelle Park — $142K, follow up on proposal + ROI model\nSubtotal: $298K\n\n**If commit lands:** $680K + $297K = **$977K (81% of quota)**\n**If best case lands:** $680K + $595K = **$1.275M (106% of quota)**\n\nThe difference between 81% and 106% comes down to re-engaging Tom and closing Michelle this month. Both are doable with focused effort this week.",
+  fallback: "Based on your current pipeline:\n\nYou have **$2.8M in pipeline** with **2.3x coverage** on a **$1.2M quota**. You've closed **$680K** (57%) with 2 weeks left.\n\n**Priorities this week:**\n1. Lock Sandra Liu's PO ($112K) — verbal commit, needs push\n2. Finalize Robert Chen's contract ($185K) — legal redline pending\n3. Re-engage Tom Reeves ($156K) — stalled 21 days, Q1 deadline play\n4. Multi-thread Apex and Summit — both need executive engagement\n5. Prep CloudBridge demo for Thursday\n\nWant me to dig into your forecast, deal risks, stakeholder gaps, or coaching insights?"
+};
+
+// ─── COMPONENTS ──────────────────────────────────────────────────────────────
+
+function MiniLine({ data, maxH = 55, color = "#1D9E75", label }) {
+  const vals = data.map(d => d.v !== undefined ? d.v : d.value);
+  const mx = Math.max(...vals);
+  const mn = Math.min(...vals);
   const range = mx - mn || 1;
-  const pts = data.map((d, i) => ({ x: (i / (data.length - 1)) * 100, y: maxH - ((d.value - mn) / range) * (maxH - 16) - 8 }));
+  const pts = vals.map((v, i) => ({ x: (i / (vals.length - 1)) * 100, y: maxH - ((v - mn) / range) * (maxH - 16) - 8 }));
   const path = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
   const area = path + ` L100,${maxH} L0,${maxH} Z`;
+  const gradId = `ag-${label || Math.random()}`;
   return (
     <svg viewBox={`0 0 100 ${maxH}`} style={{ width: "100%", height: maxH, marginTop: 8 }} preserveAspectRatio="none">
-      <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity="0.2" /><stop offset="100%" stopColor={color} stopOpacity="0" /></linearGradient></defs>
-      <path d={area} fill="url(#ag)" />
+      <defs><linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity="0.2" /><stop offset="100%" stopColor={color} stopOpacity="0" /></linearGradient></defs>
+      <path d={area} fill={`url(#${gradId})`} />
       <path d={path} fill="none" stroke={color} strokeWidth="1.5" />
       <circle cx={pts[pts.length-1].x} cy={pts[pts.length-1].y} r="2.5" fill={color} />
     </svg>
@@ -98,38 +227,131 @@ function PriorityDot({ priority }) {
   return <span style={{ width: 6, height: 6, borderRadius: "50%", background: c[priority] || c.low, display: "inline-block", flexShrink: 0 }} />;
 }
 
+function Toast({ message, type, onClose }) {
+  useEffect(() => { const t = setTimeout(onClose, 3000); return () => clearTimeout(t); }, [onClose]);
+  const colors = { success: { bg: "#E1F5EE", color: "#0F6E56", border: "#C2EDD8" }, info: { bg: "#E6F1FB", color: "#185FA5", border: "#C7DEF7" }, warning: { bg: "#FAEEDA", color: "#854F0B", border: "#F0E6D6" } };
+  const c = colors[type] || colors.info;
+  return (
+    <div style={{ position: "fixed", bottom: 24, right: 24, background: c.bg, color: c.color, border: `1px solid ${c.border}`, borderRadius: 10, padding: "12px 20px", fontSize: 13, fontWeight: 500, zIndex: 9999, boxShadow: "0 4px 20px rgba(0,0,0,0.1)", display: "flex", alignItems: "center", gap: 8, animation: "slideUp 0.3s ease" }}>
+      {type === "success" ? "✓" : "ℹ"} {message}
+      <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, color: c.color, marginLeft: 8 }}>×</button>
+    </div>
+  );
+}
+
+function BenchmarkBar({ label, you, team, topPerformer, industry, unit, inverted }) {
+  const max = Math.max(you, team, topPerformer, industry) * 1.15;
+  const barW = (v) => `${(v / max) * 100}%`;
+  const isGood = inverted ? you <= team : you >= team;
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+        <span style={{ fontSize: 12, fontWeight: 500 }}>{label}</span>
+        <span style={{ fontSize: 12, color: isGood ? "#0F6E56" : "#A32D2D", fontWeight: 600 }}>{you}{unit}</span>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        {[
+          { label: "You", value: you, color: isGood ? "#1D9E75" : "#E24B4A" },
+          { label: "Team avg", value: team, color: "#85B7EB" },
+          { label: "Top performer", value: topPerformer, color: "#EF9F27" },
+          { label: "Industry", value: industry, color: "#B4B2A9" },
+        ].map((b, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 9, color: "#888", width: 70, textAlign: "right", flexShrink: 0 }}>{b.label}</span>
+            <div style={{ flex: 1, height: 8, background: "#f0efe9", borderRadius: 4, overflow: "hidden" }}>
+              <div style={{ height: "100%", background: b.color, borderRadius: 4, width: barW(b.value), transition: "width 0.5s ease" }} />
+            </div>
+            <span style={{ fontSize: 9, color: "#888", width: 40, flexShrink: 0 }}>{b.value}{unit}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
+
 export default function AECockpit() {
-  const [activeTab, setActiveTab] = useState("Pipeline management");
+  // ── Persisted state via localStorage
+  const load = (key, def) => { try { const v = localStorage.getItem(`ae-cockpit-${key}`); return v ? JSON.parse(v) : def; } catch { return def; } };
+  const [activeTab, setActiveTab] = useState(load("activeTab", "Pipeline management"));
   const [editingId, setEditingId] = useState(null);
-  const [editedMessages, setEditedMessages] = useState({});
-  const [sentIds, setSentIds] = useState(new Set());
-  const [skippedIds, setSkippedIds] = useState(new Set());
+  const [editedMessages, setEditedMessages] = useState(load("editedMessages", {}));
+  const [sentIds, setSentIds] = useState(new Set(load("sentIds", [])));
+  const [skippedIds, setSkippedIds] = useState(new Set(load("skippedIds", [])));
   const [chatInput, setChatInput] = useState("");
-  const [chatMsgs, setChatMsgs] = useState([
+  const [chatMsgs, setChatMsgs] = useState(load("chatMsgs", [
     { from: "claude", text: "Morning, Alex. You're at **$680K closed** with **$520K to go** and 2 weeks left in Q1." },
     { from: "claude", text: "Your best path to quota: **Sandra Liu** ($112K) has a verbal commit — chase the PO. **Robert Chen** ($185K) is in contract redline. Land both and you're at **$977K (81%)**. Re-engage **Tom Reeves** ($156K) and you could hit **106%**." },
     { from: "claude", text: "**Watch out:** 4 deals are single-threaded, and your deal velocity is 8 days slower than team avg. I've got specific coaching on both — check the Coaching tab or ask me." },
-  ]);
+  ]));
   const [chatLoading, setChatLoading] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState(null);
   const [showCompleted, setShowCompleted] = useState(false);
-  const [view, setView] = useState("queue");
+  const [view, setView] = useState(load("view", "queue"));
+  const [activeAgent, setActiveAgent] = useState(null);
+  const [agentChatMsgs, setAgentChatMsgs] = useState(load("agentChatMsgs", {}));
+  const [agentInput, setAgentInput] = useState("");
+  const [agentLoading, setAgentLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [benchmarkFilter, setBenchmarkFilter] = useState("all");
   const chatEndRef = useRef(null);
+  const agentChatEndRef = useRef(null);
+  const searchRef = useRef(null);
+
+  // ── Persist to localStorage
+  useEffect(() => { localStorage.setItem("ae-cockpit-activeTab", JSON.stringify(activeTab)); }, [activeTab]);
+  useEffect(() => { localStorage.setItem("ae-cockpit-editedMessages", JSON.stringify(editedMessages)); }, [editedMessages]);
+  useEffect(() => { localStorage.setItem("ae-cockpit-sentIds", JSON.stringify([...sentIds])); }, [sentIds]);
+  useEffect(() => { localStorage.setItem("ae-cockpit-skippedIds", JSON.stringify([...skippedIds])); }, [skippedIds]);
+  useEffect(() => { localStorage.setItem("ae-cockpit-chatMsgs", JSON.stringify(chatMsgs)); }, [chatMsgs]);
+  useEffect(() => { localStorage.setItem("ae-cockpit-view", JSON.stringify(view)); }, [view]);
+  useEffect(() => { localStorage.setItem("ae-cockpit-agentChatMsgs", JSON.stringify(agentChatMsgs)); }, [agentChatMsgs]);
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chatMsgs, chatLoading]);
+  useEffect(() => { agentChatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [agentChatMsgs, agentLoading]);
+
+  // ── Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.metaKey && e.key === "k") { e.preventDefault(); setSearchOpen(o => !o); setTimeout(() => searchRef.current?.focus(), 50); }
+      if (e.key === "Escape") { setSearchOpen(false); setSearchQuery(""); setActiveAgent(null); }
+      if (e.metaKey && e.key === "1") { e.preventDefault(); setView("queue"); }
+      if (e.metaKey && e.key === "2") { e.preventDefault(); setView("benchmarks"); }
+      if (e.metaKey && e.key === "3") { e.preventDefault(); setView("agents"); }
+      if (e.metaKey && e.key === "4") { e.preventDefault(); setView("analytics"); }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  const showToast = (message, type = "success") => setToast({ message, type });
 
   const pctQuota = Math.round((REP.closed / REP.quota) * 1000) / 10;
   const gap = REP.quota - REP.closed;
-
   const allDeals = Object.values(ALL_DEALS).flat();
+
+  // ── Search filter
+  const searchResults = searchQuery.trim() ? allDeals.filter(d => {
+    const q = searchQuery.toLowerCase();
+    return (d.name && d.name.toLowerCase().includes(q)) || (d.company && d.company.toLowerCase().includes(q)) || (d.stage && d.stage.toLowerCase().includes(q)) || d.signals.some(s => s.label.toLowerCase().includes(q));
+  }) : [];
+
   const deals = (ALL_DEALS[activeTab] || []).filter(d => showCompleted || (!sentIds.has(d.id) && !skippedIds.has(d.id)));
   const tabCounts = {};
   TABS.forEach(t => { tabCounts[t] = (ALL_DEALS[t] || []).filter(d => !sentIds.has(d.id) && !skippedIds.has(d.id)).length; });
   const totalActions = Object.values(tabCounts).reduce((a, b) => a + b, 0);
   const completedToday = sentIds.size + skippedIds.size;
 
-  const handleSend = (id) => { setSentIds(prev => new Set([...prev, id])); setEditingId(null); setSelectedDeal(null); };
-  const handleSkip = (id) => { setSkippedIds(prev => new Set([...prev, id])); setSelectedDeal(null); };
+  const handleSend = (id) => { setSentIds(prev => new Set([...prev, id])); setEditingId(null); setSelectedDeal(null); showToast("Email sent successfully"); };
+  const handleSkip = (id) => { setSkippedIds(prev => new Set([...prev, id])); setSelectedDeal(null); showToast("Action skipped", "info"); };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text.replace(/\*\*/g, "").replace(/\n/g, "\n"));
+    showToast("Copied to clipboard");
+  };
 
   const handleChat = useCallback((text) => {
     const q = text || chatInput;
@@ -147,23 +369,93 @@ export default function AECockpit() {
       else if (ql.includes("forecast") || ql.includes("quota") || ql.includes("commit") || ql.includes("close") || ql.includes("q1")) reply = CHAT_RESPONSES.forecast;
       else {
         const mentionedDeal = allDeals.find(d => d.name && (ql.includes(d.name.split(" ")[0].toLowerCase()) || ql.includes(d.company.toLowerCase())));
-        if (mentionedDeal) reply = `**${mentionedDeal.name} — ${mentionedDeal.company}**\n\nRole: ${mentionedDeal.role}\nStage: ${mentionedDeal.stage}\nAmount: ${mentionedDeal.amount}\nClose date: ${mentionedDeal.closeDate}\nProbability: ${mentionedDeal.probability}%\nSignals: ${mentionedDeal.signals.map(s => s.label).join(", ")}\n\nRecommended action: ${mentionedDeal.probability >= 70 ? "This deal is close — focus on removing final blockers and getting the PO. Build a mutual action plan with specific dates." : mentionedDeal.probability >= 40 ? "Good momentum but needs acceleration. Multi-thread to reduce risk and compress the timeline. Schedule next steps before ending every call." : "This deal needs intervention. Either re-engage with new value or qualify out to focus energy on higher-probability opportunities."}`;
+        if (mentionedDeal) reply = `**${mentionedDeal.name} — ${mentionedDeal.company}**\n\nRole: ${mentionedDeal.role}\nStage: ${mentionedDeal.stage}\nAmount: ${mentionedDeal.amount}\nClose date: ${mentionedDeal.closeDate}\nProbability: ${mentionedDeal.probability}%\nSignals: ${mentionedDeal.signals.map(s => s.label).join(", ")}\n\nRecommended action: ${mentionedDeal.probability >= 70 ? "This deal is close — focus on removing final blockers and getting the PO." : mentionedDeal.probability >= 40 ? "Good momentum but needs acceleration. Multi-thread and compress timeline." : "This deal needs intervention. Re-engage with new value or qualify out."}`;
       }
       setChatMsgs(prev => [...prev, { from: "claude", text: reply }]);
       setChatLoading(false);
     }, 800 + Math.random() * 600);
   }, [chatInput, allDeals]);
 
-  const renderText = (text) => text.split("\n").map((line, i) => (
-    <span key={i}>{i > 0 && <br />}{line.split("**").map((part, j) => j % 2 === 1 ? <strong key={j}>{part}</strong> : part)}</span>
-  ));
+  // ── Agent chat handler
+  const handleAgentChat = useCallback((text) => {
+    const q = text || agentInput;
+    if (!q.trim() || !activeAgent) return;
+    const agentId = activeAgent.id;
+    setAgentChatMsgs(prev => ({ ...prev, [agentId]: [...(prev[agentId] || []), { from: "user", text: q }] }));
+    setAgentInput("");
+    setAgentLoading(true);
+    setTimeout(() => {
+      const responses = AGENT_RESPONSES[agentId] || {};
+      let reply = responses[q] || responses.fallback || "I'll research that and get back to you with specific recommendations based on your pipeline data.";
+      setAgentChatMsgs(prev => ({ ...prev, [agentId]: [...(prev[agentId] || []), { from: "agent", text: reply }] }));
+      setAgentLoading(false);
+    }, 1000 + Math.random() * 800);
+  }, [agentInput, activeAgent]);
+
+  const renderText = (text) => {
+    if (!text) return null;
+    return text.split("\n").map((line, i) => (
+      <span key={i}>{i > 0 && <br />}{line.split("**").map((part, j) => j % 2 === 1 ? <strong key={j}>{part}</strong> : part)}</span>
+    ));
+  };
 
   const sl = selectedDeal ? allDeals.find(d => d.id === selectedDeal) : null;
   const slMsg = sl ? (editedMessages[sl.id] || sl.message) : "";
-  const isCoaching = activeTab === "Coaching insights";
+
+  // ── Styles
+  const navBtn = (v, label) => (
+    <button key={v} onClick={() => { setView(v); setActiveAgent(null); }} style={{ fontSize: 13, padding: "6px 16px", borderRadius: 6, background: view === v ? "#f0efe9" : "transparent", color: view === v ? "#1a1a1a" : "#888", border: "none", cursor: "pointer", fontWeight: view === v ? 500 : 400 }}>
+      {label}
+    </button>
+  );
 
   return (
     <div style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif", background: "#FAFAF8", minHeight: "100vh" }}>
+      <style>{`
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes pulse { 0%,100% { opacity:0.3 } 50% { opacity:1 } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      `}</style>
+
+      {/* Toast */}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
+      {/* Search overlay */}
+      {searchOpen && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 9998, display: "flex", justifyContent: "center", paddingTop: 120 }} onClick={() => { setSearchOpen(false); setSearchQuery(""); }}>
+          <div style={{ width: 560, background: "#fff", borderRadius: 14, boxShadow: "0 20px 60px rgba(0,0,0,0.2)", overflow: "hidden", maxHeight: 480, animation: "fadeIn 0.15s ease" }} onClick={e => e.stopPropagation()}>
+            <div style={{ padding: "16px 20px", borderBottom: "1px solid #eee", display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ color: "#888", fontSize: 16 }}>&#x1F50D;</span>
+              <input ref={searchRef} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search deals, contacts, companies..." autoFocus style={{ flex: 1, fontSize: 15, border: "none", outline: "none", background: "transparent" }} />
+              <kbd style={{ fontSize: 10, padding: "2px 6px", borderRadius: 4, background: "#f0efe9", color: "#888", border: "1px solid #ddd" }}>ESC</kbd>
+            </div>
+            <div style={{ maxHeight: 380, overflowY: "auto", padding: "8px 0" }}>
+              {searchQuery.trim() && searchResults.length === 0 && <p style={{ padding: "20px", textAlign: "center", color: "#888", fontSize: 13 }}>No results found</p>}
+              {searchResults.map(d => (
+                <div key={d.id} onClick={() => { setSelectedDeal(d.id); setSearchOpen(false); setSearchQuery(""); setView("queue"); const tab = TABS.find(t => ALL_DEALS[t]?.some(deal => deal.id === d.id)); if (tab) setActiveTab(tab); }} style={{ padding: "10px 20px", cursor: "pointer", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid #f5f5f2" }} onMouseOver={e => e.currentTarget.style.background = "#f7f6f3"} onMouseOut={e => e.currentTarget.style.background = "transparent"}>
+                  <PriorityDot priority={d.priority} />
+                  <div style={{ flex: 1 }}>
+                    <span style={{ fontWeight: 500, fontSize: 13 }}>{d.name || d.stage}</span>
+                    {d.company && <span style={{ fontSize: 11, color: "#888", marginLeft: 8 }}>{d.company} · {d.amount}</span>}
+                  </div>
+                  {d.probability > 0 && <DealBadge probability={d.probability} />}
+                </div>
+              ))}
+              {!searchQuery.trim() && (
+                <div style={{ padding: "12px 20px" }}>
+                  <p style={{ fontSize: 11, color: "#888", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Quick actions</p>
+                  {["Pipeline management", "Deal risk", "Benchmarks", "Agents"].map(item => (
+                    <div key={item} onClick={() => { setSearchOpen(false); setSearchQuery(""); if (item === "Benchmarks") setView("benchmarks"); else if (item === "Agents") setView("agents"); else { setView("queue"); setActiveTab(item); } }} style={{ padding: "8px 12px", cursor: "pointer", borderRadius: 6, fontSize: 13 }} onMouseOver={e => e.currentTarget.style.background = "#f7f6f3"} onMouseOut={e => e.currentTarget.style.background = "transparent"}>
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top nav */}
       <div style={{ background: "#fff", borderBottom: "1px solid #eee", padding: "0 24px", display: "flex", alignItems: "center", height: 52 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginRight: 32 }}>
@@ -172,13 +464,15 @@ export default function AECockpit() {
           <span style={{ fontSize: 12, color: "#888", marginLeft: 4 }}>AE Cockpit</span>
         </div>
         <div style={{ display: "flex", gap: 2 }}>
-          {["queue", "analytics"].map(v => (
-            <button key={v} onClick={() => setView(v)} style={{ fontSize: 13, padding: "6px 16px", borderRadius: 6, background: view === v ? "#f0efe9" : "transparent", color: view === v ? "#1a1a1a" : "#888", border: "none", cursor: "pointer", fontWeight: view === v ? 500 : 400 }}>
-              {v === "queue" ? "Deal board" : "Analytics"}
-            </button>
-          ))}
+          {navBtn("queue", "Deal board")}
+          {navBtn("benchmarks", "Benchmarks")}
+          {navBtn("agents", "Agents")}
+          {navBtn("analytics", "Analytics")}
         </div>
         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
+          <button onClick={() => { setSearchOpen(true); setTimeout(() => searchRef.current?.focus(), 50); }} style={{ fontSize: 12, padding: "5px 12px", borderRadius: 6, background: "#f7f6f3", color: "#888", border: "1px solid #e0e0e0", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+            Search <kbd style={{ fontSize: 9, padding: "1px 4px", borderRadius: 3, background: "#e8e7e3", border: "1px solid #ddd" }}>&#8984;K</kbd>
+          </button>
           <span style={{ fontSize: 11, padding: "3px 10px", borderRadius: 20, background: "#E1F5EE", color: "#0F6E56", fontWeight: 500 }}>{totalActions} actions</span>
           <span style={{ fontSize: 11, padding: "3px 10px", borderRadius: 20, background: "#FCEBEB", color: "#A32D2D", fontWeight: 500 }}>{REP.dealsAtRisk} at risk</span>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -193,47 +487,303 @@ export default function AECockpit() {
         <div style={{ flex: 1, minWidth: 0 }}>
           {/* Metrics strip */}
           <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr 1fr 1fr 1fr 1fr", gap: 10, marginBottom: 14 }}>
-            <div style={{ background: "#fff", borderRadius: 10, padding: "14px 16px", border: "1px solid #eee" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
-                <div>
-                  <p style={{ fontSize: 11, color: "#888", margin: 0, textTransform: "uppercase", letterSpacing: 0.5 }}>Quota attainment</p>
-                  <p style={{ fontSize: 26, fontWeight: 600, margin: "4px 0 0", letterSpacing: -0.5 }}>${(REP.closed / 1000).toFixed(0)}K</p>
+            {[
+              { label: "Quota attainment", main: `$${(REP.closed / 1000).toFixed(0)}K`, sub: `${pctQuota}% of $${(REP.quota/1000).toFixed(0)}K`, badge: `$${(gap / 1000).toFixed(0)}K gap`, badgeColor: "#BA7517", progress: pctQuota, wide: true },
+              { label: "Pipeline", main: `$${(REP.pipeline / 1000000).toFixed(1)}M`, sub: `${REP.coverage}x coverage`, subColor: REP.coverage >= 3 ? "#0F6E56" : "#BA7517" },
+              { label: "Win rate", main: `${REP.winRate}%`, sub: "team avg 26%" },
+              { label: "Avg deal size", main: `$${(REP.avgDealSize / 1000).toFixed(0)}K`, sub: "+$13K vs team", subColor: "#0F6E56" },
+              { label: "Avg cycle", main: `${REP.avgCycle}d`, sub: "+8d vs team", subColor: "#A32D2D" },
+              { label: "Forecast", main: `$${(REP.forecastCommit / 1000).toFixed(0)}K`, sub: "commit" },
+            ].map((m, i) => (
+              <div key={i} onClick={() => { if (m.label === "Win rate" || m.label === "Avg deal size" || m.label === "Avg cycle" || m.label === "Pipeline") { setView("benchmarks"); } }} style={{ background: "#fff", borderRadius: 10, padding: "14px 16px", border: "1px solid #eee", cursor: ["Win rate", "Avg deal size", "Avg cycle", "Pipeline"].includes(m.label) ? "pointer" : "default", transition: "border-color 0.15s" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
+                  <div>
+                    <p style={{ fontSize: 11, color: "#888", margin: 0, textTransform: "uppercase", letterSpacing: 0.5 }}>{m.label}</p>
+                    <p style={{ fontSize: 26, fontWeight: 600, margin: "4px 0 0", letterSpacing: -0.5 }}>{m.main}</p>
+                  </div>
+                  {m.badge && <span style={{ fontSize: 11, color: m.badgeColor, fontWeight: 500 }}>{m.badge}</span>}
                 </div>
-                <span style={{ fontSize: 11, color: "#BA7517", fontWeight: 500 }}>${(gap / 1000).toFixed(0)}K gap</span>
+                {m.progress !== undefined && (
+                  <>
+                    <div style={{ height: 4, borderRadius: 2, background: "#f0efe9", marginTop: 10, overflow: "hidden" }}>
+                      <div style={{ height: "100%", borderRadius: 2, background: pctQuota >= 80 ? "#1D9E75" : "#EF9F27", width: `${m.progress}%` }} />
+                    </div>
+                    <p style={{ fontSize: 10, color: "#888", margin: "4px 0 0", textAlign: "right" }}>{m.sub}</p>
+                  </>
+                )}
+                {m.progress === undefined && <p style={{ fontSize: 11, color: m.subColor || "#888", margin: "6px 0 0" }}>{m.sub}</p>}
               </div>
-              <div style={{ height: 4, borderRadius: 2, background: "#f0efe9", marginTop: 10, overflow: "hidden" }}>
-                <div style={{ height: "100%", borderRadius: 2, background: pctQuota >= 80 ? "#1D9E75" : "#EF9F27", width: `${pctQuota}%` }} />
-              </div>
-              <p style={{ fontSize: 10, color: "#888", margin: "4px 0 0", textAlign: "right" }}>{pctQuota}% of ${(REP.quota/1000).toFixed(0)}K</p>
-            </div>
-            <div style={{ background: "#fff", borderRadius: 10, padding: "14px 16px", border: "1px solid #eee" }}>
-              <p style={{ fontSize: 11, color: "#888", margin: 0, textTransform: "uppercase", letterSpacing: 0.5 }}>Pipeline</p>
-              <p style={{ fontSize: 26, fontWeight: 600, margin: "4px 0 0", letterSpacing: -0.5 }}>${(REP.pipeline / 1000000).toFixed(1)}M</p>
-              <p style={{ fontSize: 11, color: REP.coverage >= 3 ? "#0F6E56" : "#BA7517", margin: "6px 0 0" }}>{REP.coverage}x coverage</p>
-            </div>
-            <div style={{ background: "#fff", borderRadius: 10, padding: "14px 16px", border: "1px solid #eee" }}>
-              <p style={{ fontSize: 11, color: "#888", margin: 0, textTransform: "uppercase", letterSpacing: 0.5 }}>Win rate</p>
-              <p style={{ fontSize: 26, fontWeight: 600, margin: "4px 0 0", letterSpacing: -0.5 }}>{REP.winRate}%</p>
-              <p style={{ fontSize: 11, color: "#888", margin: "6px 0 0" }}>team avg 26%</p>
-            </div>
-            <div style={{ background: "#fff", borderRadius: 10, padding: "14px 16px", border: "1px solid #eee" }}>
-              <p style={{ fontSize: 11, color: "#888", margin: 0, textTransform: "uppercase", letterSpacing: 0.5 }}>Avg deal size</p>
-              <p style={{ fontSize: 26, fontWeight: 600, margin: "4px 0 0", letterSpacing: -0.5 }}>${(REP.avgDealSize / 1000).toFixed(0)}K</p>
-              <p style={{ fontSize: 11, color: "#0F6E56", margin: "6px 0 0" }}>+$13K vs team</p>
-            </div>
-            <div style={{ background: "#fff", borderRadius: 10, padding: "14px 16px", border: "1px solid #eee" }}>
-              <p style={{ fontSize: 11, color: "#888", margin: 0, textTransform: "uppercase", letterSpacing: 0.5 }}>Avg cycle</p>
-              <p style={{ fontSize: 26, fontWeight: 600, margin: "4px 0 0", letterSpacing: -0.5 }}>{REP.avgCycle}d</p>
-              <p style={{ fontSize: 11, color: "#A32D2D", margin: "6px 0 0" }}>+8d vs team</p>
-            </div>
-            <div style={{ background: "#fff", borderRadius: 10, padding: "14px 16px", border: "1px solid #eee" }}>
-              <p style={{ fontSize: 11, color: "#888", margin: 0, textTransform: "uppercase", letterSpacing: 0.5 }}>Forecast</p>
-              <p style={{ fontSize: 26, fontWeight: 600, margin: "4px 0 0", letterSpacing: -0.5 }}>${(REP.forecastCommit / 1000).toFixed(0)}K</p>
-              <p style={{ fontSize: 11, color: "#888", margin: "6px 0 0" }}>commit</p>
-            </div>
+            ))}
           </div>
 
-          {view === "analytics" ? (
+          {/* ═══ BENCHMARKS VIEW ═══ */}
+          {view === "benchmarks" && (
+            <div style={{ animation: "fadeIn 0.2s ease" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                <div>
+                  <h2 style={{ fontSize: 18, fontWeight: 600, margin: 0, letterSpacing: -0.3 }}>Benchmark Analytics</h2>
+                  <p style={{ fontSize: 12, color: "#888", margin: "2px 0 0" }}>Your performance vs team, top performers, and industry</p>
+                </div>
+                <div style={{ display: "flex", gap: 4 }}>
+                  {["all", "strengths", "gaps"].map(f => (
+                    <button key={f} onClick={() => setBenchmarkFilter(f)} style={{ fontSize: 11, padding: "4px 12px", borderRadius: 5, background: benchmarkFilter === f ? "#1a1a1a" : "#fff", color: benchmarkFilter === f ? "#fff" : "#666", border: benchmarkFilter === f ? "none" : "1px solid #e0e0e0", cursor: "pointer", textTransform: "capitalize" }}>{f}</button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                {/* Benchmark bars */}
+                <div style={{ background: "#fff", borderRadius: 10, padding: 20, border: "1px solid #eee" }}>
+                  <p style={{ fontSize: 13, fontWeight: 500, margin: "0 0 4px" }}>Performance Benchmarks</p>
+                  <p style={{ fontSize: 11, color: "#888", margin: "0 0 16px" }}>You vs team, top performers, and industry averages</p>
+                  {BENCHMARKS.categories
+                    .filter(b => {
+                      if (benchmarkFilter === "all") return true;
+                      const isGood = b.inverted ? b.you <= b.team : b.you >= b.team;
+                      return benchmarkFilter === "strengths" ? isGood : !isGood;
+                    })
+                    .map((b, i) => <BenchmarkBar key={i} {...b} />)}
+                </div>
+
+                {/* Trend charts */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  {[
+                    { title: "Win Rate Trend", data: BENCHMARKS.trends.winRate, color: "#1D9E75", current: "28%", target: "35%+" },
+                    { title: "Avg Deal Size Trend", data: BENCHMARKS.trends.dealSize, color: "#185FA5", current: "$85K", target: "$95K" },
+                    { title: "Deal Cycle Trend", data: BENCHMARKS.trends.cycle, color: "#EF9F27", current: "62d", target: "54d" },
+                    { title: "Pipeline Coverage Trend", data: BENCHMARKS.trends.pipeline, color: "#534AB7", current: "2.3x", target: "3.0x" },
+                  ].map((t, i) => (
+                    <div key={i} style={{ background: "#fff", borderRadius: 10, padding: "14px 16px", border: "1px solid #eee" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div>
+                          <p style={{ fontSize: 12, fontWeight: 500, margin: 0 }}>{t.title}</p>
+                          <span style={{ fontSize: 10, color: "#888" }}>6-month trend</span>
+                        </div>
+                        <div style={{ textAlign: "right" }}>
+                          <span style={{ fontSize: 16, fontWeight: 600 }}>{t.current}</span>
+                          <span style={{ fontSize: 10, color: "#888", display: "block" }}>target: {t.target}</span>
+                        </div>
+                      </div>
+                      <MiniLine data={t.data} maxH={50} color={t.color} label={t.title} />
+                      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
+                        {t.data.map((d, j) => <span key={j} style={{ fontSize: 8, color: "#888" }}>{d.m}</span>)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Quarter over quarter */}
+                <div style={{ background: "#fff", borderRadius: 10, padding: 20, border: "1px solid #eee" }}>
+                  <p style={{ fontSize: 13, fontWeight: 500, margin: "0 0 4px" }}>Quarter over Quarter</p>
+                  <p style={{ fontSize: 11, color: "#888", margin: "0 0 14px" }}>Progression across recent quarters</p>
+                  {BENCHMARKS.quarterComps.map((q, i) => (
+                    <div key={i} style={{ padding: "10px 0", borderBottom: i < 2 ? "1px solid #f5f5f2" : "none" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                        <span style={{ fontSize: 13, fontWeight: 500 }}>{q.q}</span>
+                        <span style={{ fontSize: 12, color: "#0F6E56", fontWeight: 500 }}>{Math.round(q.closed / q.quota * 100)}% attainment</span>
+                      </div>
+                      <div style={{ display: "flex", gap: 16, fontSize: 11, color: "#888" }}>
+                        <span>Closed: ${(q.closed/1000).toFixed(0)}K / ${(q.quota/1000).toFixed(0)}K</span>
+                        <span>Win rate: {q.win}%</span>
+                        <span>Deals: {q.deals}</span>
+                      </div>
+                      <div style={{ height: 4, background: "#f0efe9", borderRadius: 2, marginTop: 8, overflow: "hidden" }}>
+                        <div style={{ height: "100%", borderRadius: 2, background: q.closed / q.quota >= 0.8 ? "#1D9E75" : "#EF9F27", width: `${Math.min(q.closed / q.quota * 100, 100)}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* AI Benchmark Insights */}
+                <div style={{ background: "#FFFBF5", borderRadius: 10, padding: 20, border: "1px solid #F0E6D6" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#D4A574", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="#fff"/></svg>
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>Claude Benchmark Insights</p>
+                      <p style={{ fontSize: 11, color: "#9C4D1A", margin: 0 }}>AI-powered performance analysis</p>
+                    </div>
+                  </div>
+                  {[
+                    { title: "Biggest leverage point", text: "Multi-threading. Your single-threaded deals close at 14% vs 38% for multi-threaded. Moving 2 deals from single to multi-threaded could add $80K+ to Q1.", color: "#E24B4A" },
+                    { title: "Strongest trend", text: "Deal size is climbing — $68K in Oct to $85K in Mar (+25%). Your large-deal skill is a differentiator. Lean into enterprise accounts.", color: "#1D9E75" },
+                    { title: "Quick win available", text: "Your ROI-lead emails get 38% reply rate (team best). If you switch all your follow-ups to ROI-lead format, that's an estimated +7% overall reply rate.", color: "#EF9F27" },
+                    { title: "Improvement trajectory", text: "At current trajectory, you'll hit 32% win rate by Q2 and 35% by Q3. Compressing discovery→demo by 4 days could accelerate that to Q2.", color: "#185FA5" },
+                  ].map((insight, i) => (
+                    <div key={i} style={{ padding: "10px 0", borderBottom: i < 3 ? "1px solid #F0E6D6" : "none" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: insight.color, display: "inline-block" }} />
+                        <span style={{ fontSize: 12, fontWeight: 600 }}>{insight.title}</span>
+                      </div>
+                      <p style={{ fontSize: 12, color: "#555", margin: 0, lineHeight: 1.5 }}>{insight.text}</p>
+                    </div>
+                  ))}
+                  <button onClick={() => { setView("agents"); setActiveAgent(AGENTS[0]); }} style={{ marginTop: 12, fontSize: 12, padding: "8px 16px", borderRadius: 6, background: "#D4A574", color: "#fff", border: "none", cursor: "pointer", fontWeight: 500, width: "100%" }}>
+                    Open AE Insight Copilot for deeper analysis
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ═══ AGENTS VIEW ═══ */}
+          {view === "agents" && !activeAgent && (
+            <div style={{ animation: "fadeIn 0.2s ease" }}>
+              <div style={{ marginBottom: 14 }}>
+                <h2 style={{ fontSize: 18, fontWeight: 600, margin: 0, letterSpacing: -0.3 }}>Agent Hub</h2>
+                <p style={{ fontSize: 12, color: "#888", margin: "2px 0 0" }}>Claude-powered agents for every stage of your workflow</p>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                {AGENTS.map(agent => (
+                  <div key={agent.id} onClick={() => setActiveAgent(agent)} style={{ background: agent.bgColor, borderRadius: 12, padding: 20, border: `1px solid ${agent.borderColor}`, cursor: "pointer", transition: "transform 0.15s, box-shadow 0.15s" }} onMouseOver={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)"; }} onMouseOut={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = ""; }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 10, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, border: `1px solid ${agent.borderColor}` }}>{agent.icon}</div>
+                      <div>
+                        <p style={{ fontSize: 14, fontWeight: 600, margin: 0, color: "#1a1a1a" }}>{agent.name}</p>
+                        <p style={{ fontSize: 11, color: agent.color, margin: 0, fontWeight: 500 }}>Claude-powered</p>
+                      </div>
+                    </div>
+                    <p style={{ fontSize: 12, color: "#555", lineHeight: 1.5, margin: "0 0 12px" }}>{agent.description}</p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                      {agent.capabilities.slice(0, 3).map((cap, i) => (
+                        <span key={i} style={{ fontSize: 10, padding: "2px 8px", borderRadius: 4, background: "#fff", color: agent.color, border: `1px solid ${agent.borderColor}` }}>{cap}</span>
+                      ))}
+                      {agent.capabilities.length > 3 && <span style={{ fontSize: 10, color: "#888", padding: "2px 4px" }}>+{agent.capabilities.length - 3}</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Recent agent activity */}
+              <div style={{ background: "#fff", borderRadius: 10, padding: 20, border: "1px solid #eee", marginTop: 14 }}>
+                <p style={{ fontSize: 13, fontWeight: 500, margin: "0 0 12px" }}>Recent Agent Activity</p>
+                {Object.entries(agentChatMsgs).filter(([, msgs]) => msgs.length > 0).length === 0 ? (
+                  <p style={{ fontSize: 12, color: "#888", textAlign: "center", padding: 16 }}>No agent conversations yet. Pick an agent above to get started.</p>
+                ) : (
+                  Object.entries(agentChatMsgs).filter(([, msgs]) => msgs.length > 0).map(([agentId, msgs]) => {
+                    const agent = AGENTS.find(a => a.id === agentId);
+                    if (!agent) return null;
+                    const lastUserMsg = [...msgs].reverse().find(m => m.from === "user");
+                    return (
+                      <div key={agentId} onClick={() => setActiveAgent(agent)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "1px solid #f5f5f2", cursor: "pointer" }}>
+                        <span style={{ fontSize: 18 }}>{agent.icon}</span>
+                        <div style={{ flex: 1 }}>
+                          <p style={{ fontSize: 12, fontWeight: 500, margin: 0 }}>{agent.name}</p>
+                          <p style={{ fontSize: 11, color: "#888", margin: 0 }}>{lastUserMsg ? lastUserMsg.text.slice(0, 60) + (lastUserMsg.text.length > 60 ? "..." : "") : "..."}</p>
+                        </div>
+                        <span style={{ fontSize: 10, color: "#888" }}>{msgs.length} messages</span>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ═══ ACTIVE AGENT VIEW ═══ */}
+          {view === "agents" && activeAgent && (
+            <div style={{ animation: "fadeIn 0.2s ease" }}>
+              {/* Agent header */}
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                <button onClick={() => setActiveAgent(null)} style={{ fontSize: 13, padding: "6px 12px", borderRadius: 6, background: "#f0efe9", border: "none", cursor: "pointer", color: "#666" }}>← Back</button>
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: activeAgent.bgColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, border: `1px solid ${activeAgent.borderColor}` }}>{activeAgent.icon}</div>
+                <div>
+                  <p style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>{activeAgent.name}</p>
+                  <p style={{ fontSize: 11, color: activeAgent.color, margin: 0 }}>{activeAgent.description}</p>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 14 }}>
+                {/* Agent chat */}
+                <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #eee", display: "flex", flexDirection: "column", height: "calc(100vh - 240px)", overflow: "hidden" }}>
+                  <div style={{ padding: "10px 16px", borderBottom: "1px solid #eee", background: activeAgent.bgColor, display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 16 }}>{activeAgent.icon}</span>
+                    <span style={{ fontWeight: 600, fontSize: 13 }}>{activeAgent.name}</span>
+                    <span style={{ fontSize: 11, color: activeAgent.color }}>Claude-powered</span>
+                    <button onClick={() => { setAgentChatMsgs(prev => ({ ...prev, [activeAgent.id]: [] })); showToast("Conversation cleared", "info"); }} style={{ marginLeft: "auto", fontSize: 11, padding: "3px 8px", borderRadius: 4, background: "transparent", color: "#888", border: "1px solid #e0e0e0", cursor: "pointer" }}>Clear</button>
+                  </div>
+
+                  <div style={{ flex: 1, padding: 16, overflowY: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
+                    {(!agentChatMsgs[activeAgent.id] || agentChatMsgs[activeAgent.id].length === 0) && (
+                      <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                        <div style={{ fontSize: 40, marginBottom: 12 }}>{activeAgent.icon}</div>
+                        <p style={{ fontSize: 15, fontWeight: 600, margin: "0 0 4px" }}>{activeAgent.name}</p>
+                        <p style={{ fontSize: 12, color: "#888", margin: "0 0 20px", lineHeight: 1.5 }}>{activeAgent.description}</p>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center" }}>
+                          {activeAgent.capabilities.map((cap, i) => (
+                            <span key={i} style={{ fontSize: 11, padding: "4px 10px", borderRadius: 5, background: activeAgent.bgColor, color: activeAgent.color, border: `1px solid ${activeAgent.borderColor}` }}>{cap}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {(agentChatMsgs[activeAgent.id] || []).map((m, i) => (
+                      <div key={i} style={{ alignSelf: m.from === "user" ? "flex-end" : "flex-start", maxWidth: "85%" }}>
+                        <div style={{ background: m.from === "user" ? "#E6F1FB" : activeAgent.bgColor, borderRadius: m.from === "user" ? "12px 12px 2px 12px" : "12px 12px 12px 2px", padding: "12px 16px", border: m.from === "user" ? "none" : `1px solid ${activeAgent.borderColor}` }}>
+                          <p style={{ fontSize: 12, lineHeight: 1.7, margin: 0, whiteSpace: "pre-wrap" }}>{renderText(m.text)}</p>
+                        </div>
+                        {m.from === "agent" && (
+                          <div style={{ display: "flex", gap: 4, marginTop: 4, justifyContent: "flex-start" }}>
+                            <button onClick={() => copyToClipboard(m.text)} style={{ fontSize: 10, padding: "2px 8px", borderRadius: 4, background: "#f7f6f3", color: "#888", border: "1px solid #e0e0e0", cursor: "pointer" }}>Copy</button>
+                            <button onClick={() => { showToast("Sent to email draft", "success"); }} style={{ fontSize: 10, padding: "2px 8px", borderRadius: 4, background: "#f7f6f3", color: "#888", border: "1px solid #e0e0e0", cursor: "pointer" }}>Email</button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {agentLoading && (
+                      <div style={{ alignSelf: "flex-start", background: activeAgent.bgColor, borderRadius: "12px 12px 12px 2px", padding: "12px 16px", border: `1px solid ${activeAgent.borderColor}` }}>
+                        <div style={{ display: "flex", gap: 4 }}>
+                          {[0, 1, 2].map(i => <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: activeAgent.color, animation: `pulse 1s ${i * 0.2}s infinite` }} />)}
+                        </div>
+                      </div>
+                    )}
+                    <div ref={agentChatEndRef} />
+                  </div>
+
+                  <div style={{ padding: "12px 16px", borderTop: "1px solid #eee", background: "#FAFAF8" }}>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <input value={agentInput} onChange={e => setAgentInput(e.target.value)} onKeyDown={e => e.key === "Enter" && handleAgentChat()} placeholder={`Ask ${activeAgent.name}...`} style={{ flex: 1, fontSize: 13, padding: "10px 14px", borderRadius: 8, border: "1px solid #ddd", outline: "none", background: "#fff" }} />
+                      <button onClick={() => handleAgentChat()} style={{ fontSize: 13, padding: "10px 18px", borderRadius: 8, background: "#1a1a1a", color: "#fff", border: "none", cursor: "pointer", fontWeight: 500 }}>Send</button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Agent suggested prompts */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div style={{ background: "#fff", borderRadius: 10, padding: 16, border: "1px solid #eee" }}>
+                    <p style={{ fontSize: 12, fontWeight: 500, margin: "0 0 10px", color: "#888", textTransform: "uppercase", letterSpacing: 0.5 }}>Suggested prompts</p>
+                    {activeAgent.prompts.map((p, i) => (
+                      <button key={i} onClick={() => handleAgentChat(p)} style={{ display: "block", width: "100%", textAlign: "left", fontSize: 12, padding: "8px 12px", borderRadius: 6, background: activeAgent.bgColor, color: "#333", border: `1px solid ${activeAgent.borderColor}`, cursor: "pointer", marginBottom: 6, lineHeight: 1.4 }}>{p}</button>
+                    ))}
+                  </div>
+
+                  <div style={{ background: "#fff", borderRadius: 10, padding: 16, border: "1px solid #eee" }}>
+                    <p style={{ fontSize: 12, fontWeight: 500, margin: "0 0 10px", color: "#888", textTransform: "uppercase", letterSpacing: 0.5 }}>Capabilities</p>
+                    {activeAgent.capabilities.map((cap, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", borderBottom: i < activeAgent.capabilities.length - 1 ? "1px solid #f5f5f2" : "none" }}>
+                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: activeAgent.color, display: "inline-block", flexShrink: 0 }} />
+                        <span style={{ fontSize: 12, color: "#555" }}>{cap}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Quick switch to other agents */}
+                  <div style={{ background: "#fff", borderRadius: 10, padding: 16, border: "1px solid #eee" }}>
+                    <p style={{ fontSize: 12, fontWeight: 500, margin: "0 0 10px", color: "#888", textTransform: "uppercase", letterSpacing: 0.5 }}>Other agents</p>
+                    {AGENTS.filter(a => a.id !== activeAgent.id).map(a => (
+                      <div key={a.id} onClick={() => setActiveAgent(a)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", cursor: "pointer", borderBottom: "1px solid #f5f5f2" }}>
+                        <span style={{ fontSize: 16 }}>{a.icon}</span>
+                        <span style={{ fontSize: 12, fontWeight: 500 }}>{a.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ═══ ANALYTICS VIEW ═══ */}
+          {view === "analytics" && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               <div style={{ background: "#fff", borderRadius: 10, padding: 20, border: "1px solid #eee" }}>
                 <p style={{ fontSize: 13, fontWeight: 500, margin: "0 0 4px" }}>Pipeline by Stage</p>
@@ -256,9 +806,9 @@ export default function AECockpit() {
               <div style={{ background: "#fff", borderRadius: 10, padding: 20, border: "1px solid #eee" }}>
                 <p style={{ fontSize: 13, fontWeight: 500, margin: "0 0 4px" }}>Win Rate Trend</p>
                 <p style={{ fontSize: 11, color: "#888", margin: "0 0 4px" }}>Monthly close rate (%)</p>
-                <MiniLine data={WIN_RATE_DATA} maxH={120} />
+                <MiniLine data={BENCHMARKS.trends.winRate} maxH={120} label="wr-big" />
                 <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
-                  {WIN_RATE_DATA.map((d,i) => <span key={i} style={{ fontSize: 9, color: "#888" }}>{d.month}</span>)}
+                  {BENCHMARKS.trends.winRate.map((d,i) => <span key={i} style={{ fontSize: 9, color: "#888" }}>{d.m}</span>)}
                 </div>
               </div>
               <div style={{ background: "#fff", borderRadius: 10, padding: 20, border: "1px solid #eee" }}>
@@ -304,7 +854,10 @@ export default function AECockpit() {
                 ))}
               </div>
             </div>
-          ) : (
+          )}
+
+          {/* ═══ DEAL BOARD VIEW ═══ */}
+          {view === "queue" && (
             <>
               {/* Tabs */}
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
@@ -361,7 +914,7 @@ export default function AECockpit() {
                           {sl.name ? (
                             <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#E6F1FB", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 12, color: "#185FA5" }}>{sl.name.split(" ").map(n => n[0]).join("")}</div>
                           ) : (
-                            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#FFF0E6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>💡</div>
+                            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#FFF0E6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>&#128161;</div>
                           )}
                           <div>
                             <p style={{ fontWeight: 600, fontSize: 15, margin: 0 }}>{sl.name || sl.stage}</p>
@@ -408,6 +961,7 @@ export default function AECockpit() {
                           )}
                         </>
                       )}
+                      <button onClick={() => copyToClipboard(slMsg)} style={{ fontSize: 12, padding: "8px 16px", borderRadius: 6, background: "transparent", color: "#666", border: "1px solid #ddd", cursor: "pointer" }}>Copy</button>
                       <button onClick={() => handleSkip(sl.id)} style={{ fontSize: 12, padding: "8px 16px", borderRadius: 6, background: "transparent", color: "#888", border: "1px solid #ddd", cursor: "pointer" }}>{sl.name ? "Skip" : "Dismiss"}</button>
                       <button onClick={() => handleChat(sl.name ? `Tell me more about ${sl.name} at ${sl.company}` : `Give me coaching advice on ${sl.stage}`)} style={{ fontSize: 12, padding: "8px 16px", borderRadius: 6, background: "transparent", color: "#185FA5", border: "1px solid #85B7EB", cursor: "pointer" }}>Ask Claude</button>
                     </div>
@@ -418,45 +972,54 @@ export default function AECockpit() {
           )}
         </div>
 
-        {/* Right: Claude chat */}
-        <div style={{ width: 340, flexShrink: 0, background: "#fff", border: "1px solid #eee", borderRadius: 12, display: "flex", flexDirection: "column", overflow: "hidden", height: "calc(100vh - 100px)", position: "sticky", top: 16 }}>
-          <div style={{ padding: "10px 16px", borderBottom: "1px solid #eee", display: "flex", alignItems: "center", gap: 8, background: "#FAFAF8" }}>
-            <div style={{ width: 24, height: 24, borderRadius: "50%", background: "#D4A574", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="#fff"/></svg>
-            </div>
-            <span style={{ fontWeight: 600, fontSize: 13 }}>Claude</span>
-            <span style={{ fontSize: 11, color: "#888" }}>Deal coach</span>
-          </div>
-
-          <div style={{ flex: 1, padding: 14, overflowY: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
-            {chatMsgs.map((m, i) => (
-              <div key={i} style={{ alignSelf: m.from === "user" ? "flex-end" : "flex-start", maxWidth: "92%", background: m.from === "user" ? "#E6F1FB" : "#FAFAF8", borderRadius: m.from === "user" ? "10px 10px 2px 10px" : "10px 10px 10px 2px", padding: "10px 14px", border: m.from === "user" ? "none" : "1px solid #f0efe9" }}>
-                <p style={{ fontSize: 12, lineHeight: 1.6, margin: 0, whiteSpace: "pre-wrap" }}>{renderText(m.text)}</p>
+        {/* ═══ RIGHT PANEL: Claude Chat (visible on non-agent views) ═══ */}
+        {(view !== "agents" || !activeAgent) && (
+          <div style={{ width: 340, flexShrink: 0, background: "#fff", border: "1px solid #eee", borderRadius: 12, display: "flex", flexDirection: "column", overflow: "hidden", height: "calc(100vh - 100px)", position: "sticky", top: 16 }}>
+            <div style={{ padding: "10px 16px", borderBottom: "1px solid #eee", display: "flex", alignItems: "center", gap: 8, background: "#FAFAF8" }}>
+              <div style={{ width: 24, height: 24, borderRadius: "50%", background: "#D4A574", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="#fff"/></svg>
               </div>
-            ))}
-            {chatLoading && (
-              <div style={{ alignSelf: "flex-start", background: "#FAFAF8", borderRadius: "10px 10px 10px 2px", padding: "10px 14px", border: "1px solid #f0efe9" }}>
-                <div style={{ display: "flex", gap: 4 }}>
-                  {[0, 1, 2].map(i => <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: "#ccc", animation: `pulse 1s ${i * 0.2}s infinite` }} />)}
+              <span style={{ fontWeight: 600, fontSize: 13 }}>Claude</span>
+              <span style={{ fontSize: 11, color: "#888" }}>Deal coach</span>
+              <button onClick={() => { setChatMsgs([]); showToast("Chat cleared", "info"); }} style={{ marginLeft: "auto", fontSize: 10, padding: "2px 8px", borderRadius: 4, background: "transparent", color: "#888", border: "1px solid #e0e0e0", cursor: "pointer" }}>Clear</button>
+            </div>
+
+            <div style={{ flex: 1, padding: 14, overflowY: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
+              {chatMsgs.map((m, i) => (
+                <div key={i} style={{ alignSelf: m.from === "user" ? "flex-end" : "flex-start", maxWidth: "92%" }}>
+                  <div style={{ background: m.from === "user" ? "#E6F1FB" : "#FAFAF8", borderRadius: m.from === "user" ? "10px 10px 2px 10px" : "10px 10px 10px 2px", padding: "10px 14px", border: m.from === "user" ? "none" : "1px solid #f0efe9" }}>
+                    <p style={{ fontSize: 12, lineHeight: 1.6, margin: 0, whiteSpace: "pre-wrap" }}>{renderText(m.text)}</p>
+                  </div>
+                  {m.from === "claude" && (
+                    <div style={{ display: "flex", gap: 4, marginTop: 2 }}>
+                      <button onClick={() => copyToClipboard(m.text)} style={{ fontSize: 9, padding: "1px 6px", borderRadius: 3, background: "transparent", color: "#aaa", border: "1px solid #e8e7e3", cursor: "pointer" }}>Copy</button>
+                    </div>
+                  )}
                 </div>
-                <style>{`@keyframes pulse { 0%,100% { opacity:0.3 } 50% { opacity:1 } }`}</style>
-              </div>
-            )}
-            <div ref={chatEndRef} />
-          </div>
-
-          <div style={{ padding: "10px 14px", borderTop: "1px solid #eee", background: "#FAFAF8" }}>
-            <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 8 }}>
-              {["Pipeline breakdown", "Deal risks", "Stakeholder gaps", "Q1 forecast", "How can I improve?"].map((sg, i) => (
-                <button key={i} onClick={() => handleChat(sg)} style={{ fontSize: 10, padding: "4px 8px", borderRadius: 5, background: "#fff", color: "#666", border: "1px solid #e0e0e0", cursor: "pointer" }}>{sg}</button>
               ))}
+              {chatLoading && (
+                <div style={{ alignSelf: "flex-start", background: "#FAFAF8", borderRadius: "10px 10px 10px 2px", padding: "10px 14px", border: "1px solid #f0efe9" }}>
+                  <div style={{ display: "flex", gap: 4 }}>
+                    {[0, 1, 2].map(i => <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: "#ccc", animation: `pulse 1s ${i * 0.2}s infinite` }} />)}
+                  </div>
+                </div>
+              )}
+              <div ref={chatEndRef} />
             </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === "Enter" && handleChat()} placeholder="Ask about your deals..." style={{ flex: 1, fontSize: 12, padding: "8px 12px", borderRadius: 8, border: "1px solid #ddd", outline: "none", background: "#fff" }} />
-              <button onClick={() => handleChat()} style={{ fontSize: 12, padding: "8px 14px", borderRadius: 8, background: "#1a1a1a", color: "#fff", border: "none", cursor: "pointer", fontWeight: 500 }}>Send</button>
+
+            <div style={{ padding: "10px 14px", borderTop: "1px solid #eee", background: "#FAFAF8" }}>
+              <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 8 }}>
+                {["Pipeline breakdown", "Deal risks", "Stakeholder gaps", "Q1 forecast", "How can I improve?"].map((sg, i) => (
+                  <button key={i} onClick={() => handleChat(sg)} style={{ fontSize: 10, padding: "4px 8px", borderRadius: 5, background: "#fff", color: "#666", border: "1px solid #e0e0e0", cursor: "pointer" }}>{sg}</button>
+                ))}
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === "Enter" && handleChat()} placeholder="Ask about your deals..." style={{ flex: 1, fontSize: 12, padding: "8px 12px", borderRadius: 8, border: "1px solid #ddd", outline: "none", background: "#fff" }} />
+                <button onClick={() => handleChat()} style={{ fontSize: 12, padding: "8px 14px", borderRadius: 8, background: "#1a1a1a", color: "#fff", border: "none", cursor: "pointer", fontWeight: 500 }}>Send</button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
